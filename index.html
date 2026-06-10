@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta CNPJ — MAXIMOS Soluções Empresariais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --ink:#101418; --muted:#9aa1ab; --soft:#626b76;
+    --line:#edeff2; --line2:#f4f5f7;
+    --verde:#27c24c; --verde2:#1ea33e; --verde-soft:#edfaf0;
+    --preto:#0e1216; --preto2:#171c22;
+    --ambar:#e0a000; --ambar-soft:#fff7e6; --vermelho:#e23d3d; --vermelho-soft:#fdecec;
+    --r:18px; --r2:13px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter','Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;}
+  ::selection{background:var(--verde);color:#fff;}
+  header{background:rgba(14,18,22,.92);backdrop-filter:blur(8px);color:#fff;position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.06);}
+  .hdr{max-width:1120px;margin:0 auto;padding:13px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+  .logo{display:flex;align-items:center;gap:12px;}
+  .logo-img{height:40px;width:auto;display:block;border-radius:9px;}
+  .logo .txt b{font-size:18px;font-weight:800;letter-spacing:.5px;line-height:1;color:#fff;display:block;}
+  .logo .txt span{display:block;font-size:8.5px;letter-spacing:3.5px;color:#7f8893;margin-top:3px;font-weight:500;}
+  .hdr .badge{font-size:11.5px;color:#aeb6c0;font-weight:500;}
+  .hdr .badge b{color:var(--verde);font-weight:700;}
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 24px 70px;}
+
+  .hero{text-align:center;padding:18px 0 26px;}
+  .hero h1{font-size:27px;font-weight:900;letter-spacing:-.7px;margin:0 0 6px;}
+  .hero p{margin:0;color:var(--muted);font-size:14px;}
+  .search{max-width:620px;margin:20px auto 0;display:flex;gap:10px;}
+  .search input{flex:1;min-width:0;padding:16px 18px;border:1px solid var(--line);border-radius:14px;font-size:17px;font-family:inherit;background:#fff;letter-spacing:.5px;font-weight:600;box-shadow:0 2px 10px rgba(16,20,24,.03);}
+  .search input:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 3px var(--verde-soft);}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:13px;padding:15px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap;}
+  .btn svg{width:17px;height:17px;}
+  .btn-go{background:var(--verde);color:#fff;box-shadow:0 4px 14px rgba(39,194,76,.28);}
+  .btn-go:hover{background:var(--verde2);}
+  .btn-go:disabled{opacity:.6;cursor:default;box-shadow:none;}
+  .btn-ghost{background:#fff;color:var(--soft);border:1px solid var(--line);}
+  .btn-ghost:hover{border-color:#dde1e6;color:var(--ink);}
+  .btn-dark{background:var(--preto);color:#fff;}
+  .btn-dark:hover{background:var(--preto2);}
+
+  .recent{max-width:760px;margin:16px auto 0;}
+  .recent .lbl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;text-align:center;}
+  .recent-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+  .rchip{background:#fff;border:1px solid var(--line);border-radius:22px;padding:7px 14px;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s;max-width:280px;}
+  .rchip:hover{border-color:var(--verde);box-shadow:0 3px 12px rgba(39,194,76,.1);}
+  .rchip .dot{width:7px;height:7px;border-radius:50%;background:var(--verde);flex-shrink:0;}
+  .rchip.baixada .dot{background:var(--vermelho);}
+  .rchip.outra .dot{background:var(--ambar);}
+  .rchip .rc-nome{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rchip .rc-x{color:var(--muted);font-weight:700;font-size:13px;line-height:1;opacity:.6;}
+  .rchip .rc-x:hover{opacity:1;color:var(--vermelho);}
+  .recent-empty{color:var(--muted);font-size:12.5px;text-align:center;}
+
+  .state{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:56px 22px;text-align:center;color:var(--muted);margin-top:22px;}
+  .state svg{width:52px;height:52px;color:#dde2e7;margin-bottom:14px;}
+  .state.err{border-color:#f4cccc;background:var(--vermelho-soft);color:#a82d2d;}
+  .state.err svg{color:#e3a3a3;}
+  .spin{display:inline-block;width:28px;height:28px;border:3px solid var(--verde-soft);border-top-color:var(--verde2);border-radius:50%;animation:sp .7s linear infinite;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+
+  .result{margin-top:22px;display:flex;flex-direction:column;gap:16px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;}
+  .res-hero{background:var(--preto);color:#fff;padding:24px 26px;display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+  .res-hero .rh-fant{font-size:21px;font-weight:800;letter-spacing:-.3px;line-height:1.2;}
+  .res-hero .rh-razao{font-size:13px;color:#aeb6c0;margin-top:4px;}
+  .res-hero .rh-cnpj{font-family:ui-monospace,'SF Mono',monospace;font-size:14px;color:#e6eaee;margin-top:13px;font-weight:600;letter-spacing:.5px;}
+  .res-hero .mf{font-family:'Inter',sans-serif;font-size:10.5px;background:#272f37;color:#aeb6c0;padding:3px 9px;border-radius:6px;margin-left:9px;font-weight:600;letter-spacing:.3px;}
+  .st{font-size:11.5px;font-weight:700;padding:6px 13px;border-radius:22px;white-space:nowrap;margin-left:auto;}
+  .st.ativa{background:var(--verde);color:#fff;} .st.baixada{background:var(--vermelho);color:#fff;} .st.outra{background:var(--ambar);color:#fff;}
+
+  .sec{padding:20px 24px;}
+  .sec + .sec{border-top:1px solid var(--line2);}
+  .sec h3{font-size:11px;margin:0 0 15px;text-transform:uppercase;letter-spacing:.8px;color:var(--soft);font-weight:700;display:flex;align-items:center;gap:8px;}
+  .sec h3 .ico{width:24px;height:24px;border-radius:7px;background:var(--verde-soft);color:var(--verde2);display:inline-flex;align-items:center;justify-content:center;}
+  .sec h3 .ico svg{width:14px;height:14px;}
+  .sec h3 .tag{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:none;color:var(--muted);background:#f4f5f7;padding:3px 10px;border-radius:12px;}
+
+  .exec{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:11px;}
+  .ec{border:1px solid var(--line);border-radius:var(--r2);padding:13px 15px;background:#fff;transition:.15s;}
+  .ec:hover{border-color:#dfe3e8;}
+  .ec .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;}
+  .ec .v{font-size:15px;font-weight:700;margin-top:5px;word-break:break-word;line-height:1.3;}
+  .ec.full{grid-column:1/-1;}
+  .ec .v.sm{font-size:13.5px;font-weight:600;}
+
+  .trib{background:linear-gradient(180deg,#f3fbf5,#fff);border:1px solid #cdeed7;}
+  .trib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:13px;}
+  .ti{background:#fff;border:1px solid var(--line);border-radius:var(--r2);padding:14px;}
+  .ti .tl{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px;}
+  .ti .tv{font-size:14px;font-weight:700;margin-top:5px;color:var(--ink);}
+  .ti .ts{font-size:11.5px;color:var(--soft);font-weight:500;margin-top:3px;line-height:1.4;}
+  .ti .yes{color:var(--verde2);} .ti .no{color:var(--muted);}
+  .conf{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
+  .conf.alta{background:var(--verde-soft);color:var(--verde2);} .conf.media{background:var(--ambar-soft);color:var(--ambar);} .conf.baixa{background:var(--vermelho-soft);color:var(--vermelho);}
+  .nota{font-size:11px;color:var(--soft);margin-top:13px;line-height:1.5;background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 13px;}
+  .nota b{color:var(--ink);}
+
+  .cnae-main{background:var(--verde-soft);border:1px solid #cdeed7;border-radius:var(--r2);padding:14px 16px;font-weight:600;}
+  .cnae-main .cc{font-family:ui-monospace,monospace;font-weight:800;color:var(--verde2);}
+  .cnae-list{margin-top:11px;display:flex;flex-direction:column;gap:7px;}
+  .cnae-li{display:flex;gap:11px;font-size:13px;padding:10px 13px;border:1px solid var(--line);border-radius:11px;background:#fafbfc;}
+  .cnae-li .cc{font-family:ui-monospace,monospace;font-weight:700;color:var(--verde2);flex-shrink:0;}
+
+  .ende{font-size:14.5px;line-height:1.55;font-weight:500;}
+  .ende .cep{color:var(--soft);}
+  .map-link{display:inline-flex;align-items:center;gap:6px;margin-top:11px;font-size:12.5px;color:var(--verde2);font-weight:600;text-decoration:none;}
+  .map-link:hover{text-decoration:underline;}
+
+  .socios{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:12px;}
+  .socio{border:1px solid var(--line);border-radius:var(--r2);padding:15px;background:#fafbfc;position:relative;}
+  .socio.adm{border-color:#cdeed7;background:var(--verde-soft);}
+  .socio .s-nome{font-weight:700;font-size:14px;line-height:1.3;padding-right:54px;}
+  .socio .s-qual{font-size:12px;color:var(--verde2);font-weight:600;margin-top:3px;}
+  .socio .s-badge{position:absolute;top:13px;right:13px;font-size:9px;font-weight:800;letter-spacing:.4px;background:var(--verde);color:#fff;padding:3px 8px;border-radius:10px;}
+  .socio .s-meta{font-size:11.5px;color:var(--muted);margin-top:10px;display:flex;flex-direction:column;gap:3px;}
+  .socio .s-meta b{color:var(--soft);font-weight:600;}
+
+  .tl{position:relative;padding-left:24px;margin-top:4px;}
+  .tl::before{content:'';position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--line);}
+  .tl-ev{position:relative;padding:0 0 16px 4px;}
+  .tl-ev:last-child{padding-bottom:0;}
+  .tl-ev::before{content:'';position:absolute;left:-23px;top:3px;width:11px;height:11px;border-radius:50%;background:var(--verde);border:2.5px solid #fff;box-shadow:0 0 0 1px var(--line);}
+  .tl-ev .d{font-size:11px;color:var(--muted);font-weight:700;}
+  .tl-ev .t{font-size:13.5px;font-weight:600;margin-top:1px;}
+
+  .fiscal{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
+  .fcert{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px dashed #dfe3e8;border-radius:11px;padding:13px 15px;background:#fafbfc;}
+  .fcert .fn{font-weight:600;font-size:13px;}
+  .fcert .fb{font-size:9.5px;font-weight:700;letter-spacing:.3px;padding:4px 9px;border-radius:11px;background:#eef0f2;color:#9aa1ab;white-space:nowrap;}
+  .lock-note{font-size:12px;color:var(--soft);background:var(--ambar-soft);border:1px solid #f1e2b8;border-radius:11px;padding:12px 14px;margin-top:13px;line-height:1.5;}
+
+  .res-actions{padding:17px 24px;display:flex;gap:9px;flex-wrap:wrap;background:#fafbfc;border-top:1px solid var(--line2);}
+  .btn-sm{padding:11px 17px;font-size:13px;border-radius:11px;}
+  footer{text-align:center;color:var(--muted);font-size:11.5px;padding:30px 22px 10px;}
+  footer a{color:var(--soft);}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--preto);color:#fff;padding:13px 22px;border-radius:13px;font-size:13px;font-weight:600;box-shadow:0 12px 32px rgba(0,0,0,.3);z-index:4000;opacity:0;transition:.25s;pointer-events:none;}
+  .toast.show{opacity:1;bottom:34px;}
+  @media print{
+    header,.hero,.recent,.res-actions,.noprint,footer{display:none !important;}
+    body{background:#fff;} .wrap{padding:0;max-width:none;} .result{gap:0;}
+    .card{border:none;border-radius:0;} .res-hero{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .sec,.socio,.ti,.cnae-main,.cnae-li,.ec{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr">
+    <div class="logo">
+      <img class="logo-img" src="logo-maximos.jpg" alt="MAXIMOS" onerror="this.style.display='none'">
+      <div class="txt"><b>MAXIMOS</b><span>SOLUÇÕES EMPRESARIAIS</span></div>
+    </div>
+    <div class="badge">Consulta de <b>CNPJ</b> · Receita Federal</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero noprint">
+    <h1>Consulta de CNPJ</h1>
+    <p>Raio-X da empresa em segundos — cadastro, mapa tributário e quadro de sócios.</p>
+    <div class="search">
+      <input id="inp" inputmode="numeric" placeholder="00.000.000/0000-00" autocomplete="off"
+             oninput="onInput(this)" onkeydown="if(event.key==='Enter')consultar()">
+      <button class="btn btn-go" id="btnGo" onclick="consultar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Consultar
+      </button>
+    </div>
+    <div class="recent">
+      <div class="lbl">🕘 Últimas consultas</div>
+      <div class="recent-row" id="recentBox"></div>
+    </div>
+  </div>
+
+  <div id="stateInicial" class="state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>
+    <div>Informe um CNPJ acima para ver o raio-X completo da empresa.</div>
+  </div>
+  <div id="stateLoad" class="state" style="display:none;"><div class="spin"></div><div style="margin-top:15px;">Consultando a Receita Federal...</div></div>
+  <div id="stateErr" class="state err" style="display:none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div id="errMsg"></div>
+  </div>
+
+  <div id="result" class="result" style="display:none;"></div>
+
+  <footer>MAXIMOS Soluções Empresariais · dados públicos da Receita Federal via <a href="https://brasilapi.com.br" target="_blank" rel="noopener">BrasilAPI</a> · o Mapa Tributário é uma estimativa pela atividade (CNAE).</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='https://brasilapi.com.br/api/cnpj/v1/';
+const LS='maximos_cnpj_hist_v2';
+
+/* Faixas do Simples (LC 123/2006) — [tetoReceita12m, aliquotaNominal, parcelaDeduzir] */
+const ANEXOS={
+  I:{faixas:[[180000,.04,0],[360000,.073,5940],[720000,.095,13860],[1800000,.107,22500],[3600000,.143,87300],[4800000,.19,378000]]},
+  II:{faixas:[[180000,.045,0],[360000,.078,5940],[720000,.10,13860],[1800000,.112,22500],[3600000,.147,85500],[4800000,.30,720000]]},
+  III:{faixas:[[180000,.06,0],[360000,.112,9360],[720000,.135,17640],[1800000,.16,35640],[3600000,.21,125640],[4800000,.33,648000]]},
+  IV:{faixas:[[180000,.045,0],[360000,.09,8100],[720000,.102,12420],[1800000,.14,39780],[3600000,.22,183780],[4800000,.33,828000]]},
+  V:{faixas:[[180000,.155,0],[360000,.18,4500],[720000,.195,9900],[1800000,.205,17100],[3600000,.23,62100],[4800000,.305,540000]]}
+};
+
+let HIST=[], atual=null, carregando=false;
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function soDig(s){return (s||'').toString().replace(/\D/g,'');}
+function fmtCnpj(d){d=soDig(d).padStart(14,'0').slice(0,14);return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5');}
+function fmtMascara(v){const d=soDig(v).slice(0,14);let r='';for(let i=0;i<d.length;i++){if(i===2||i===5)r+='.';if(i===8)r+='/';if(i===12)r+='-';r+=d[i];}return r;}
+function fmtCep(c){c=soDig(c);return c.length===8?c.replace(/^(\d{5})(\d{3})$/,'$1-$2'):(c||'—');}
+function fmtTel(t){const d=soDig(t);if(!d)return '';if(d.length===11)return d.replace(/^(\d{2})(\d{5})(\d{4})$/,'($1) $2-$3');if(d.length===10)return d.replace(/^(\d{2})(\d{4})(\d{4})$/,'($1) $2-$3');return t;}
+function fmtCpfSocio(s){const d=soDig(s);if(d.length===11)return '***.'+d.slice(3,6)+'.'+d.slice(6,9)+'-**';return s||'—';}
+function dataBR(s){if(!s)return '—';const p=String(s).slice(0,10).split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:s;}
+function brl(v){const n=Number(v);if(isNaN(n))return '—';return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2});}
+function pct(v){return (Number(v)*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+'%';}
+function simNao(v){return v===true?'Sim':(v===false?'Não':'—');}
+
+function cnpjValido(cnpj){
+  cnpj=soDig(cnpj);
+  if(cnpj.length!==14)return false;
+  if(/^(\d)\1{13}$/.test(cnpj))return false;
+  let t=12,num=cnpj.substring(0,t),dig=cnpj.substring(t),soma=0,pos=t-7;
+  for(let i=t;i>=1;i--){soma+=num.charAt(t-i)*pos--;if(pos<2)pos=9;}
+  let res=soma%11<2?0:11-soma%11;
+  if(res!=dig.charAt(0))return false;
+  t=13;num=cnpj.substring(0,t);soma=0;pos=t-7;
+  for(let i=t;i>=1;i--){soma+=num.charAt(t-i)*pos--;if(pos<2)pos=9;}
+  res=soma%11<2?0:11-soma%11;
+  return res==dig.charAt(1);
+}
+
+/* Classificador CNAE -> atividade/anexo (LC 123/2006 e CGSN 140/2018). Mesma régua do Estudo Tributário. */
+function cnaeParaAtividade(cnae){
+  const d=String(cnae||'').replace(/\D/g,'').padStart(7,'0');
+  const div=parseInt(d.slice(0,2),10), grupo=d.slice(0,3);
+  const R=(atividade,label,conf)=>({atividade,label,conf:conf||'alta'});
+  if(div>=45&&div<=47)return R('comercio','Anexo I — Comércio');
+  if(div>=5&&div<=32)return R('industria','Anexo II — Indústria');
+  if(div===49)return grupo==='493'?R('transporte_carga','Anexo III — Transporte de cargas'):R('transporte_pass','Anexo III — Transporte de passageiros','media');
+  if(div>=50&&div<=53)return R('transporte_carga','Anexo III — Transporte/Logística','media');
+  if(d==='6911701')return R('servico_iv','Anexo IV — Advocacia');
+  if(div>=41&&div<=43)return R('servico_iv','Anexo IV — Construção civil');
+  if(div===80)return R('servico_iv','Anexo IV — Vigilância/Segurança');
+  if(grupo==='812')return R('servico_iv','Anexo IV — Limpeza/Conservação');
+  if(d==='8130300')return R('servico_iv','Anexo IV — Paisagismo');
+  if(grupo==='692')return R('servico_iii_fixo','Anexo III fixo (§5º-B) — Escritório de contabilidade');
+  if(div===85)return R('servico_iii_fixo','Anexo III fixo (§5º-B) — Ensino/Educação');
+  if(d==='8559600'||grupo==='855')return R('servico_iii_fixo','Anexo III fixo (§5º-B) — Ensino/Cursos','media');
+  if(grupo==='791')return R('servico_iii_fixo','Anexo III fixo (§5º-B) — Agência de viagens');
+  if(div===95||div===33)return R('servico_iii_fixo','Anexo III fixo (§5º-B) — Reparação/Manutenção');
+  if(grupo==='931')return R('servico_iii','Anexo III/V (Fator R, §5º-D) — Academia');
+  if(div===62||div===63)return R('servico_iii','Anexo III/V (Fator R, §5º-D) — TI/Software');
+  if(grupo==='711'||grupo==='712')return R('servico_iii','Anexo III/V (Fator R, §5º-I) — Engenharia/Arquitetura');
+  if(div===73)return R('servico_iii','Anexo III/V (Fator R, §5º-I) — Publicidade/Pesquisa');
+  if(div===69||div===70)return R('servico_iii','Anexo III/V (Fator R, §5º-I) — Jurídico/Consultoria/Gestão');
+  if(div===74)return R('servico_iii','Anexo III/V (Fator R, §5º-I) — Design/Técnico');
+  if(div===75)return R('servico_iii','Anexo III/V (Fator R, §5º-I) — Veterinária');
+  if(div===86)return R('servico_iii','Anexo III/V (Fator R) — Saúde/Medicina','media');
+  if(div===68)return R('servico_iii','Anexo III/V (Fator R, §5º-D) — Adm./Locação de imóveis');
+  return R('servico_iii','Serviço — Anexo III ou V (Fator R) · confirmar','baixa');
+}
+function infoTributaria(cnae){
+  const cls=cnaeParaAtividade(cnae), at=cls.atividade;
+  let anexo='III', fatorR=false, presIRPJ=32;
+  if(at==='comercio'){anexo='I';presIRPJ=8;}
+  else if(at==='industria'){anexo='II';presIRPJ=8;}
+  else if(at==='transporte_carga'){anexo='III';presIRPJ=8;}
+  else if(at==='transporte_pass'){anexo='III';presIRPJ=16;}
+  else if(at==='servico_iv'){anexo='IV';presIRPJ=32;}
+  else if(at==='servico_iii_fixo'){anexo='III';presIRPJ=32;}
+  else if(at==='servico_iii'){anexo='III';fatorR=true;presIRPJ=32;}
+  else if(at==='servico_v'){anexo='V';fatorR=true;presIRPJ=32;}
+  const fx=ANEXOS[anexo].faixas;
+  return {label:cls.label,conf:cls.conf,anexo,fatorR,presIRPJ,aliqMin:fx[0][1],aliqMax:fx[fx.length-1][1]};
+}
+function regimeTrib(d){
+  const r=d.regime_tributario;
+  if(Array.isArray(r)&&r.length){
+    const u=r.slice().sort((a,b)=>(b.ano||0)-(a.ano||0))[0];
+    return (u.forma_de_tributacao||'—')+(u.ano?' ('+u.ano+')':'');
+  }
+  return 'Não informado';
+}
+function ehAdmin(q){return /(ADMINISTRADOR|TITULAR|PRESIDENTE|DIRETOR|S[ÓO]CIO-ADMIN)/i.test(q||'');}
+
+function onInput(el){el.value=fmtMascara(el.value);}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+function mostra(id){['stateInicial','stateLoad','stateErr','result'].forEach(x=>$(x).style.display=(x===id?(x==='result'?'flex':'block'):'none'));}
+function erro(msg){$('errMsg').textContent=msg;mostra('stateErr');}
+function setLoading(on){carregando=on;const b=$('btnGo');b.disabled=on;if(on)mostra('stateLoad');}
+function classeSituacao(sit){const s=(sit||'').toUpperCase();if(s.indexOf('ATIVA')>=0)return 'ativa';if(s.indexOf('BAIXADA')>=0)return 'baixada';return 'outra';}
+
+async function consultar(cnpjArg){
+  if(carregando)return;
+  const cnpj=soDig(cnpjArg!=null?cnpjArg:$('inp').value);
+  if(cnpj.length!==14){erro('Digite os 14 dígitos do CNPJ.');return;}
+  if(!cnpjValido(cnpj)){erro('Esse CNPJ não é válido (o dígito verificador não confere). Confira os números.');return;}
+  $('inp').value=fmtCnpj(cnpj);
+  setLoading(true);
+  try{
+    const res=await fetch(API+cnpj);
+    if(res.status===404){erro('CNPJ não encontrado na base da Receita Federal.');setLoading(false);return;}
+    if(res.status===429){erro('Muitas consultas em pouco tempo. Espere alguns segundos e tente de novo.');setLoading(false);return;}
+    if(!res.ok){erro('Não foi possível consultar agora (erro '+res.status+'). Tente novamente em instantes.');setLoading(false);return;}
+    const d=await res.json();
+    atual=d; render(d); addHist(d);
+  }catch(e){erro('Falha de conexão. Verifique sua internet e tente novamente.');}
+  setLoading(false);
+}
+
+function ec(k,v,full,sm){return '<div class="ec'+(full?' full':'')+'"><div class="k">'+k+'</div><div class="v'+(sm?' sm':'')+'">'+v+'</div></div>';}
+function ti(label,valor,sub){return '<div class="ti"><div class="tl">'+label+'</div><div class="tv">'+valor+'</div>'+(sub?'<div class="ts">'+sub+'</div>':'')+'</div>';}
+function icon(p){return '<span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+p+'</svg></span>';}
+
+function render(d){
+  const sit=d.descricao_situacao_cadastral||'—', cls=classeSituacao(sit);
+  const trib=infoTributaria(d.cnae_fiscal);
+  const ende=[d.descricao_tipo_de_logradouro,d.logradouro].filter(Boolean).join(' ')+(d.numero?', '+d.numero:'')+(d.complemento?' — '+d.complemento:'');
+  const enderecoCompleto=[ende,d.bairro,(d.municipio||'')+(d.uf?'/'+d.uf:'')].filter(Boolean).join(' · ');
+  const mapQ=encodeURIComponent([ende,d.bairro,d.municipio,d.uf,d.cep].filter(Boolean).join(', '));
+  const secs=(d.cnaes_secundarios||[]).filter(c=>c&&(c.codigo||c.descricao));
+  const qsa=(d.qsa||[]);
+
+  // HERO
+  let h='<div class="card"><div class="res-hero">'+
+    '<div><div class="rh-fant">'+esc(d.nome_fantasia||d.razao_social||'—')+'</div>'+
+    (d.nome_fantasia?'<div class="rh-razao">'+esc(d.razao_social||'')+'</div>':'')+
+    '<div class="rh-cnpj">'+fmtCnpj(d.cnpj)+'<span class="mf">'+esc(d.descricao_identificador_matriz_filial||'')+'</span></div></div>'+
+    '<span class="st '+cls+'">'+esc(sit)+'</span></div>'+
+
+  // RESUMO EXECUTIVO
+  '<div class="sec"><h3>'+icon('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/>')+'Resumo executivo</h3><div class="exec">'+
+    ec('Situação','<span style="color:var(--'+(cls==='ativa'?'verde2':cls==='baixada'?'vermelho':'ambar')+')">'+esc(sit)+'</span>')+
+    ec('Abertura',dataBR(d.data_inicio_atividade))+
+    ec('Porte',esc(d.porte||'—'),false,true)+
+    ec('Capital social',brl(d.capital_social),false,true)+
+    ec('Natureza jurídica',esc(d.natureza_juridica||'—'),true,true)+
+    ec('Regime tributário',esc(regimeTrib(d)),false,true)+
+    ec('Optante Simples',simNao(d.opcao_pelo_simples))+
+    ec('MEI',simNao(d.opcao_pelo_mei))+
+  '</div></div>'+
+
+  // MAPA TRIBUTÁRIO
+  '<div class="sec trib"><h3>'+icon('<path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>')+'Mapa tributário <span class="tag">estimativa pelo CNAE</span></h3><div class="trib-grid">'+
+    ti('Anexo do Simples','<span style="font-size:13px">'+esc(trib.label)+'</span>','Confiança: <span class="conf '+trib.conf+'">'+trib.conf+'</span>')+
+    ti('Alíquota Simples (faixa)',pct(trib.aliqMin)+' a '+pct(trib.aliqMax),'Conforme o faturamento (RBT12)')+
+    ti('Fator R',trib.fatorR?'<span class="yes">Aplicável</span>':'<span class="no">Não se aplica</span>',trib.fatorR?'Anexo III se folha ≥ 28% do faturamento; senão Anexo V':'A atividade não usa Fator R')+
+    ti('Lucro Presumido','<span class="yes">Permitido</span>','Até R$ 78 mi/ano · presunção IRPJ ~'+trib.presIRPJ+'%')+
+    ti('Lucro Real','<span class="yes">Permitido</span>','Obrigatório acima de R$ 78 mi/ano ou casos específicos')+
+  '</div><div class="nota">⚠️ <b>Estimativa</b> baseada na atividade principal (CNAE). O enquadramento real depende do faturamento, da folha e da apuração — use como ponto de partida, não como definição oficial.</div></div>'+
+
+  // ATIVIDADE
+  '<div class="sec"><h3>'+icon('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>')+'Atividade econômica (CNAE)</h3>'+
+    '<div class="cnae-main"><span class="cc">'+esc(d.cnae_fiscal||'')+'</span> · '+esc(d.cnae_fiscal_descricao||'—')+'</div>'+
+    (secs.length?'<div class="cnae-list">'+secs.map(c=>'<div class="cnae-li"><span class="cc">'+esc(c.codigo)+'</span><span>'+esc(c.descricao||'')+'</span></div>').join('')+'</div>':'<div class="nota" style="margin-top:11px">Sem CNAEs secundários.</div>')+
+  '</div>'+
+
+  // ENDEREÇO
+  '<div class="sec"><h3>'+icon('<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>')+'Endereço</h3>'+
+    '<div class="ende">'+esc(enderecoCompleto||'—')+'<br><span class="cep">CEP '+fmtCep(d.cep)+'</span></div>'+
+    (mapQ?'<a class="map-link" href="https://www.google.com/maps/search/?api=1&query='+mapQ+'" target="_blank" rel="noopener">📍 Ver no Google Maps</a>':'')+
+  '</div>'+
+
+  // CONTATO
+  '<div class="sec"><h3>'+icon('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>')+'Contato</h3><div class="exec">'+
+    ec('Telefone',esc(fmtTel(d.ddd_telefone_1)||'—'))+
+    (d.ddd_telefone_2?ec('Telefone 2',esc(fmtTel(d.ddd_telefone_2))):'')+
+    ec('E-mail',d.email?esc(String(d.email).toLowerCase()):'—',true,true)+
+  '</div></div>'+
+
+  // QUADRO SOCIETÁRIO
+  '<div class="sec"><h3>'+icon('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/>')+'Quadro societário <span class="tag">'+qsa.length+' sócio(s)</span></h3>'+
+    (qsa.length?'<div class="socios">'+qsa.map(s=>{const adm=ehAdmin(s.qualificacao_socio);return '<div class="socio'+(adm?' adm':'')+'">'+(adm?'<span class="s-badge">ADMIN</span>':'')+
+      '<div class="s-nome">'+esc(s.nome_socio||'—')+'</div><div class="s-qual">'+esc(s.qualificacao_socio||'')+'</div><div class="s-meta">'+
+      (s.cnpj_cpf_do_socio?'<span><b>Doc.:</b> '+esc(fmtCpfSocio(s.cnpj_cpf_do_socio))+'</span>':'')+
+      (s.data_entrada_sociedade?'<span><b>Entrada:</b> '+dataBR(s.data_entrada_sociedade)+'</span>':'')+
+      (s.faixa_etaria&&s.faixa_etaria!=='Não se aplica'?'<span><b>Faixa etária:</b> '+esc(s.faixa_etaria)+'</span>':'')+
+      '</div></div>';}).join('')+'</div>'+
+      '<div class="nota">A base pública <b>não traz o percentual de participação</b> nem o CPF completo (protegido por LGPD). A marcação "ADMIN" é deduzida da qualificação do sócio.</div>'
+     :'<div class="nota">Esta empresa não tem quadro de sócios na base pública (comum em MEI / empresário individual).</div>')+
+  '</div>'+
+
+  // LINHA DO TEMPO
+  '<div class="sec"><h3>'+icon('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>')+'Linha do tempo</h3>'+timeline(d)+
+    '<div class="nota">A Receita publica só a <b>foto atual</b>. Eventos como troca de endereço, mudança de CNAE, saída de sócios e alteração de capital ficam na Junta Comercial e não aparecem aqui.</div>'+
+  '</div>'+
+
+  // SITUAÇÃO FISCAL (em breve)
+  '<div class="sec"><h3>'+icon('<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>')+'Situação fiscal &amp; certidões <span class="tag">em breve</span></h3>'+
+    '<div class="fiscal">'+['Certidão Federal','Certidão Estadual','Certidão Municipal','FGTS','Débitos Previdenciários','Dívida Ativa','Parcelamentos'].map(n=>'<div class="fcert"><span class="fn">'+n+'</span><span class="fb">requer integração</span></div>').join('')+'</div>'+
+    '<div class="lock-note">🔒 Certidões, dívida ativa e pendências <b>não estão em base pública gratuita</b> — cada uma fica num órgão diferente (Receita, Sefaz, Prefeitura, Caixa, INSS), com captcha/certificado. Dá pra ligar este bloco com uma <b>API paga</b> (Infosimples, SERPRO…). Quando quiser, a gente integra.</div>'+
+  '</div>'+
+
+  // AÇÕES
+  '<div class="res-actions noprint">'+
+    '<button class="btn btn-sm btn-dark" onclick="imprimir()">📄 Salvar / Imprimir PDF</button>'+
+    '<button class="btn btn-sm btn-ghost" onclick="copiarResumo()">📋 Copiar dados</button>'+
+    '<button class="btn btn-sm btn-ghost" onclick="novaConsulta()">🔍 Nova consulta</button>'+
+  '</div></div>';
+
+  $('result').innerHTML=h;
+  mostra('result');
+}
+
+function timeline(d){
+  const evs=[];
+  if(d.data_inicio_atividade)evs.push({data:String(d.data_inicio_atividade).slice(0,10),t:'Abertura da empresa'});
+  (d.qsa||[]).forEach(s=>{if(s.data_entrada_sociedade)evs.push({data:String(s.data_entrada_sociedade).slice(0,10),t:'Entrada de sócio: '+(s.nome_socio||'')});});
+  if(d.data_situacao_cadastral&&classeSituacao(d.descricao_situacao_cadastral)!=='ativa')evs.push({data:String(d.data_situacao_cadastral).slice(0,10),t:'Situação: '+(d.descricao_situacao_cadastral||'')});
+  evs.sort((a,b)=>a.data.localeCompare(b.data));
+  if(!evs.length)return '<div class="nota">Sem datas para montar a linha do tempo.</div>';
+  return '<div class="tl">'+evs.map(e=>'<div class="tl-ev"><div class="d">'+dataBR(e.data)+'</div><div class="t">'+esc(e.t)+'</div></div>').join('')+'</div>';
+}
+
+function imprimir(){window.print();}
+function novaConsulta(){$('inp').value='';$('inp').focus();mostra('stateInicial');window.scrollTo({top:0,behavior:'smooth'});}
+function copiarResumo(){
+  if(!atual)return;const d=atual;const trib=infoTributaria(d.cnae_fiscal);
+  const linhas=[
+    (d.nome_fantasia||d.razao_social||''),'CNPJ: '+fmtCnpj(d.cnpj),'Razão social: '+(d.razao_social||''),
+    'Situação: '+(d.descricao_situacao_cadastral||''),'Abertura: '+dataBR(d.data_inicio_atividade),
+    'Porte: '+(d.porte||'')+' | Natureza: '+(d.natureza_juridica||''),'Capital social: '+brl(d.capital_social),
+    'Regime tributário: '+regimeTrib(d),'CNAE: '+(d.cnae_fiscal||'')+' - '+(d.cnae_fiscal_descricao||''),
+    'Mapa tributário (estimado): '+trib.label+' | Fator R: '+(trib.fatorR?'aplicável':'não')+' | Simples ~'+pct(trib.aliqMin)+' a '+pct(trib.aliqMax),
+    'Endereço: '+[[d.descricao_tipo_de_logradouro,d.logradouro].filter(Boolean).join(' '),d.numero,d.bairro,(d.municipio||'')+'/'+(d.uf||''),'CEP '+fmtCep(d.cep)].filter(Boolean).join(', '),
+    'Telefone: '+(fmtTel(d.ddd_telefone_1)||'—')+' | E-mail: '+(d.email||'—'),
+    'Sócios: '+((d.qsa||[]).map(s=>s.nome_socio+(s.qualificacao_socio?' ('+s.qualificacao_socio+')':'')).join('; ')||'—')
+  ];
+  const txt=linhas.join('\n');
+  if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>toast('📋 Dados copiados!'),()=>toast('Não consegui copiar.'));
+  else toast('Cópia não suportada neste navegador.');
+}
+
+// ---- Histórico (localStorage, com data/hora) ----
+function loadHist(){try{HIST=JSON.parse(localStorage.getItem(LS)||'[]');}catch(e){HIST=[];}}
+function saveHist(){try{localStorage.setItem(LS,JSON.stringify(HIST.slice(0,15)));}catch(e){}}
+function addHist(d){
+  const cnpj=soDig(d.cnpj);
+  HIST=HIST.filter(h=>h.cnpj!==cnpj);
+  HIST.unshift({cnpj,nome:(d.nome_fantasia||d.razao_social||fmtCnpj(cnpj)),sit:d.descricao_situacao_cadastral||'',quando:new Date().toLocaleString('pt-BR')});
+  HIST=HIST.slice(0,15);saveHist();renderHist();
+}
+function removeHist(cnpj,ev){if(ev)ev.stopPropagation();HIST=HIST.filter(h=>h.cnpj!==cnpj);saveHist();renderHist();}
+function renderHist(){
+  const box=$('recentBox');
+  if(!HIST.length){box.innerHTML='<span class="recent-empty">Nenhuma consulta ainda — suas buscas ficam salvas aqui neste computador.</span>';return;}
+  box.innerHTML=HIST.map(h=>'<span class="rchip '+classeSituacao(h.sit)+'" onclick="consultar(\''+h.cnpj+'\')" title="'+esc(fmtCnpj(h.cnpj))+(h.quando?' · '+esc(h.quando):'')+'"><span class="dot"></span><span class="rc-nome">'+esc(h.nome.length>30?h.nome.slice(0,30)+'…':h.nome)+'</span><span class="rc-x" onclick="removeHist(\''+h.cnpj+'\',event)">×</span></span>').join('');
+}
+
+loadHist();renderHist();$('inp').focus();
+</script>
+</body>
+</html>

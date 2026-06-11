@@ -130,11 +130,6 @@
   .tl-ev .d{font-size:11px;color:var(--muted);font-weight:700;}
   .tl-ev .t{font-size:13.5px;font-weight:600;margin-top:1px;}
 
-  .fiscal{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
-  .fcert{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px dashed #dfe3e8;border-radius:11px;padding:13px 15px;background:#fafbfc;}
-  .fcert .fn{font-weight:600;font-size:13px;}
-  .fcert .fb{font-size:9.5px;font-weight:700;letter-spacing:.3px;padding:4px 9px;border-radius:11px;background:#eef0f2;color:#9aa1ab;white-space:nowrap;}
-  .lock-note{font-size:12px;color:var(--soft);background:var(--ambar-soft);border:1px solid #f1e2b8;border-radius:11px;padding:12px 14px;margin-top:13px;line-height:1.5;}
 
   .res-actions{padding:17px 24px;display:flex;gap:9px;flex-wrap:wrap;background:#fafbfc;border-top:1px solid var(--line2);}
   .btn-sm{padding:11px 17px;font-size:13px;border-radius:11px;}
@@ -392,12 +387,6 @@ function render(d){
   // LINHA DO TEMPO
   '<div class="sec"><h3>'+icon('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>')+'Linha do tempo</h3>'+timeline(d)+
     '<div class="nota">A Receita publica só a <b>foto atual</b>. Eventos como troca de endereço, mudança de CNAE, saída de sócios e alteração de capital ficam na Junta Comercial e não aparecem aqui.</div>'+
-  '</div>'+
-
-  // SITUAÇÃO FISCAL (em breve)
-  '<div class="sec"><h3>'+icon('<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>')+'Situação fiscal &amp; certidões <span class="tag">em breve</span></h3>'+
-    '<div class="fiscal">'+['Certidão Federal','Certidão Estadual','Certidão Municipal','FGTS','Débitos Previdenciários','Dívida Ativa','Parcelamentos'].map(n=>'<div class="fcert"><span class="fn">'+n+'</span><span class="fb">requer integração</span></div>').join('')+'</div>'+
-    '<div class="lock-note">🔒 Certidões, dívida ativa e pendências <b>não estão em base pública gratuita</b> — cada uma fica num órgão diferente (Receita, Sefaz, Prefeitura, Caixa, INSS), com captcha/certificado. Dá pra ligar este bloco com uma <b>API paga</b> (Infosimples, SERPRO…). Quando quiser, a gente integra.</div>'+
   '</div>'+
 
   // AÇÕES

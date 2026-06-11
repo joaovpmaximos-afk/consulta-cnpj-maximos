@@ -131,6 +131,17 @@
   .tl-ev .t{font-size:13.5px;font-weight:600;margin-top:1px;}
 
 
+  .fil-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+  .fil-item{display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:11px;padding:11px 14px;background:#fafbfc;font-size:13px;flex-wrap:wrap;}
+  .fil-item.atual{border-color:var(--verde);background:var(--verde-soft);}
+  .fil-ord{font-family:ui-monospace,monospace;font-weight:700;color:var(--soft);font-size:12px;min-width:36px;}
+  .fil-mf{font-size:9.5px;font-weight:700;letter-spacing:.3px;padding:3px 8px;border-radius:9px;background:#eef0f2;color:var(--soft);}
+  .fil-mf.matriz{background:var(--preto);color:#fff;}
+  .fil-cnpj{font-family:ui-monospace,monospace;font-size:12.5px;}
+  .fil-tag-atual{font-size:8.5px;font-weight:800;background:var(--verde);color:#fff;padding:2px 7px;border-radius:9px;letter-spacing:.3px;}
+  .fil-loc{color:var(--soft);margin-left:auto;font-size:12.5px;}
+  .fbadge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:11px;white-space:nowrap;}
+  .fbadge.ativa{background:var(--verde-soft);color:var(--verde2);} .fbadge.baixada{background:var(--vermelho-soft);color:var(--vermelho);} .fbadge.outra{background:var(--ambar-soft);color:var(--ambar);}
   .res-actions{padding:17px 24px;display:flex;gap:9px;flex-wrap:wrap;background:#fafbfc;border-top:1px solid var(--line2);}
   .btn-sm{padding:11px 17px;font-size:13px;border-radius:11px;}
   footer{text-align:center;color:var(--muted);font-size:11.5px;padding:30px 22px 10px;}
@@ -384,6 +395,12 @@ function render(d){
      :'<div class="nota">Esta empresa não tem quadro de sócios na base pública (comum em MEI / empresário individual).</div>')+
   '</div>'+
 
+  // FILIAIS / ESTABELECIMENTOS
+  '<div class="sec"><h3>'+icon('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>')+'Filiais / Estabelecimentos</h3>'+
+    '<div id="filBox"><button class="btn btn-ghost btn-sm" id="filBtn" onclick="buscarFiliais()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar matriz + filiais</button>'+
+    '<div class="nota" style="margin-top:11px">A Receita não entrega essa lista pronta — o app procura os estabelecimentos um a um (matriz 0001, filiais 0002, 0003…). Leva alguns segundos; redes muito grandes mostram as primeiras 30.</div></div>'+
+  '</div>'+
+
   // LINHA DO TEMPO
   '<div class="sec"><h3>'+icon('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>')+'Linha do tempo</h3>'+timeline(d)+
     '<div class="nota">A Receita publica só a <b>foto atual</b>. Eventos como troca de endereço, mudança de CNAE, saída de sócios e alteração de capital ficam na Junta Comercial e não aparecem aqui.</div>'+
@@ -410,6 +427,49 @@ function timeline(d){
   return '<div class="tl">'+evs.map(e=>'<div class="tl-ev"><div class="d">'+dataBR(e.data)+'</div><div class="t">'+esc(e.t)+'</div></div>').join('')+'</div>';
 }
 
+function calcDvCnpj(base12){
+  const calc=num=>{let t=num.length,soma=0,pos=t-7;for(let i=t;i>=1;i--){soma+=num.charAt(t-i)*pos--;if(pos<2)pos=9;}const r=soma%11;return r<2?0:11-r;};
+  const d1=calc(base12);return ''+d1+calc(base12+d1);
+}
+function cnpjDaOrdem(raiz,ordem){const base=raiz+String(ordem).padStart(4,'0');return base+calcDvCnpj(base);}
+async function buscarFiliais(){
+  if(!atual)return;
+  const raiz=soDig(atual.cnpj).slice(0,8), atualCnpj=soDig(atual.cnpj);
+  const btn=$('filBtn'); if(btn)btn.disabled=true;
+  const CAP=30, achadas=[]; let aviso='';
+  for(let ordem=1;ordem<=CAP;ordem++){
+    if(btn)btn.innerHTML='<span class="spin" style="width:13px;height:13px;border-width:2px;vertical-align:middle"></span> Procurando... ('+achadas.length+')';
+    const cnpj=cnpjDaOrdem(raiz,ordem);
+    try{
+      const res=await fetch(API+cnpj);
+      if(res.status===404)break;
+      if(res.status===429){aviso='Muitas consultas em pouco tempo — parei aqui. Tente de novo em instantes.';break;}
+      if(!res.ok)break;
+      const d=await res.json();
+      achadas.push({ordem,cnpj,mf:(d.descricao_identificador_matriz_filial||''),mun:d.municipio||'',uf:d.uf||'',sit:d.descricao_situacao_cadastral||''});
+    }catch(e){aviso='Falha de conexão durante a busca.';break;}
+    await new Promise(r=>setTimeout(r,300));
+  }
+  if(achadas.length>=CAP&&!aviso)aviso='Mostrando os primeiros '+CAP+' (é uma rede grande — pode ter mais).';
+  renderFiliais(achadas,atualCnpj,aviso);
+}
+function renderFiliais(lista,atualCnpj,aviso){
+  const box=$('filBox'); if(!box)return;
+  if(!lista.length){box.innerHTML='<div class="nota">Não encontrei estabelecimentos agora (pode ser limite momentâneo de consultas). Tente de novo em instantes.</div>';return;}
+  const nFil=lista.filter(x=>/FILIAL/i.test(x.mf)).length;
+  let h='<div style="font-size:13.5px;font-weight:700;margin-bottom:10px">'+lista.length+' estabelecimento(s) — 1 matriz e '+nFil+' filial(is)</div><div class="fil-list">';
+  lista.forEach(x=>{
+    const ehMatriz=/MATRIZ/i.test(x.mf), cls=classeSituacao(x.sit), eAtual=soDig(x.cnpj)===atualCnpj;
+    h+='<div class="fil-item'+(eAtual?' atual':'')+'"><span class="fil-ord">'+String(x.ordem).padStart(4,'0')+'</span>'+
+       '<span class="fil-mf'+(ehMatriz?' matriz':'')+'">'+esc(x.mf||'—')+'</span>'+
+       '<span class="fil-cnpj">'+fmtCnpj(x.cnpj)+'</span>'+
+       (eAtual?'<span class="fil-tag-atual">VOCÊ ESTÁ AQUI</span>':'')+
+       '<span class="fil-loc">'+esc(x.mun)+'/'+esc(x.uf)+'</span>'+
+       '<span class="fbadge '+cls+'">'+esc(x.sit)+'</span></div>';
+  });
+  h+='</div>'+(aviso?'<div class="nota" style="margin-top:11px">⚠️ '+esc(aviso)+'</div>':'');
+  box.innerHTML=h;
+}
 function imprimir(){window.print();}
 function novaConsulta(){$('inp').value='';$('inp').focus();mostra('stateInicial');window.scrollTo({top:0,behavior:'smooth'});}
 function copiarResumo(){
